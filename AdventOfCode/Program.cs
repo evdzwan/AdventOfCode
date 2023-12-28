@@ -1,6 +1,7 @@
 ﻿using AdventOfCode;
 using AdventOfCode.Challenges;
 using System.Diagnostics;
+using System.IO;
 
 Console.WriteLine("Advent of Code 2023");
 Console.WriteLine();
@@ -20,11 +21,19 @@ var answers = await Task.WhenAll(ExecuteChallengeAsync<Day_01_Trebuchet>(),
 
 foreach ((var challenge, var part1, var part2, var time) in answers)
 {
-    Console.ForegroundColor = ConsoleColor.White;
-    Console.Write(challenge);
-    Console.ResetColor();
-    Console.WriteLine($" took {(long)time.TotalMilliseconds}ms");
+    PrintChallenge(challenge, part1, part2, time);
+}
 
+static async Task<(string Challenge, object? Part1, object? Part2, TimeSpan time)> ExecuteChallengeAsync<TChallenge>() where TChallenge : Challenge, new()
+{
+    using var challenge = new TChallenge();
+    var startTime = Stopwatch.GetTimestamp();
+    (var part1, var part2) = await challenge.ExecuteAsync();
+    return (challenge.GetType().Name, part1, part2, Stopwatch.GetElapsedTime(startTime));
+}
+
+static void PrintAnswers(object? part1, object? part2)
+{
     Console.Write("\tPart 1: ");
     Console.ForegroundColor = ConsoleColor.White;
     Console.WriteLine(part1 is Exception ex1 ? ex1.Message : part1);
@@ -34,14 +43,15 @@ foreach ((var challenge, var part1, var part2, var time) in answers)
     Console.ForegroundColor = ConsoleColor.White;
     Console.WriteLine(part2 is Exception ex2 ? ex2.Message : part2);
     Console.ResetColor();
-
-    Console.WriteLine();
 }
 
-static async Task<(string Challenge, object? Part1, object? Part2, TimeSpan time)> ExecuteChallengeAsync<TChallenge>() where TChallenge : Challenge, new()
+static void PrintChallenge(string challenge, object? part1, object? part2, TimeSpan time)
 {
-    using var challenge = new TChallenge();
-    var startTime = Stopwatch.GetTimestamp();
-    (var part1, var part2) = await challenge.ExecuteAsync();
-    return (challenge.GetType().Name, part1, part2, Stopwatch.GetElapsedTime(startTime));
+    Console.ForegroundColor = ConsoleColor.White;
+    Console.Write(challenge);
+    Console.ResetColor();
+    Console.WriteLine($" took {(long)time.TotalMilliseconds}ms");
+
+    PrintAnswers(part1, part2);
+    Console.WriteLine();
 }
